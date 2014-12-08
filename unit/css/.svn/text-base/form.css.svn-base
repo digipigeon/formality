@@ -1,0 +1,18 @@
+form {
+	
+}
+form fieldset {
+	margin-top:20px;
+	padding: 10px;
+}
+form legend {
+	font-weight: bold;
+}
+form label {
+	clear: left;
+	float: left;
+	width: 220px;
+}
+form input[type="submit"] {
+	margin-left: 220px;
+}

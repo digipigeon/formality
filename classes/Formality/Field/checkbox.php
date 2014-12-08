@@ -1,0 +1,117 @@
+<?php
+
+/**
+ * Formality - HTML5 Compatible PHP 5.3 form manipulation.
+ *
+ * You are free:
+ *  to Share — to copy, distribute and transmit the work
+ *  to Remix — to adapt the work
+ *
+ * Under the following conditions:
+ *
+ * Attribution — You must attribute the work in the manner specified by the author or licensor
+ * (but not in any way that suggests that they endorse you or your use of the work). 
+ *
+ * @category   Formality
+ * @package    Formality
+ * @author     Jonathan Hulme <jon@digipigeon.com>
+ * @author     Jon Ellis <jellis@digipigeon.com>
+ * @copyright  2005-2010 Digipigeon Limited
+ * @license    http://creativecommons.org/licenses/by/3.0/  Creative Commons Attribution 3.0 Unported Licens
+ * @version    SVN: $Id$
+ * @link       http://www.digipigeon.com/formality
+ */
+ 
+class Formality_Field_Checkbox extends Formality_Field{
+	protected $local_fieldset;
+
+	public function render($label=true, $container=true){
+		$str_attributes = '';
+		foreach($this->config['attributes'] as $key){
+			if (array_key_exists($key,$this->config) && is_string($this->config[$key])){
+				$str_attributes .= " $key=\"{$this->config[$key]}\"";
+			}
+		}
+		
+		$local_fieldset = new Formality_Fieldset(Array('id' => $this->config['id'] . '_fieldset'));
+		
+		$output = $this->config['html'];
+		$output = str_replace('[:attr]',	$str_attributes,		$output);
+		$output = str_replace('[:id]',		$this->config['id'],	 $output);
+		if (!empty($this->config['simple'])){
+			$output = str_replace('[:value]',	$this->content(),	$output);
+		}else{
+			$output = str_replace('[:value]',	$local_fieldset->render($this->content()),	$output);
+		}
+		foreach($this->config as $k => $v){
+			if (!is_string($v)) continue;
+			$output = str_replace("[:$k]",	$v,	$output);
+		}
+
+
+		if ($label && !empty($this->label->config['label'])) $output = $this->label->render($output);
+		if ($container) $output = $this->container->render($output);
+		return $output;
+	}
+	
+	protected function content(){
+		$html = '';
+		if (empty($this->config['simple']) && !empty($this->config['list'])){
+			if (!empty($this->config['flatten']) && is_string($this->config['value'])){
+				$this->config['value'] = explode(',', $this->config['value']);
+			}
+
+			$label_attrs = '';
+			foreach($this->config as $k => $v){
+				if (substr($k,0,15) == 'checkbox.label.'){
+					$label_attrs .= " " . substr($k,15) . "=\"$v\"";
+				}
+			}
+
+			
+			foreach($this->auto_array($this->config['list']) as $item){
+				$prop = '';
+				$selected = false;
+				if (isset($this->config["value"])){
+					if (is_array($this->config["value"])){
+						$selected = in_array($item["value"], $this->config["value"]);
+					}else{
+						$selected = $this->config["value"] == $item["value"];
+					}
+				}
+	
+				if (key_exists('disabled', $item)) $prop .= "disabled='disabled' ";
+				if ($selected){
+					$prop .= "checked='checked' ";
+				}
+				$html .= "<label$label_attrs><input name='{$this->config['id']}[]' type='checkbox' $prop value='{$item["value"]}' />{$item["label"]}</label>";
+			}
+		}
+		
+		if (!empty($this->config['simple'])){
+			$prop = '';
+			if (key_exists('disabled', $this->config)) $prop .= "disabled='disabled' ";
+			if (!empty($this->config['value'])){
+				$prop .= "checked='checked' ";
+			}
+			$html .= "<input name='{$this->config['id']}' type='checkbox' $prop value='on' />";
+		}
+		return $html;
+	}
+	public function pull(){
+		if (empty($this->config['simple'])){
+			if (isset($_POST[$this->config['id']])){
+				$this->config['value'] = $_POST[$this->config['id']]; 
+			} else {
+				$this->config['value'] = Array(); 
+			}
+			if (!empty($this->config['flatten']) && is_array($this->config['value'])){
+				$this->config['value'] = implode(',', $this->config['value']);
+			}
+//			$this->__call('value', $_POST[$this->config['id']]);
+		} else {
+			$this->__call('value', Array(!empty($_POST[$this->config['id']])));
+		}
+	}
+}
+	

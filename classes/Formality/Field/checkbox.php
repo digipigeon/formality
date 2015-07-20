@@ -101,7 +101,14 @@ class Formality_Field_Checkbox extends Formality_Field{
 	public function pull(){
 		if (empty($this->config['simple'])){
 			if (isset($_POST[$this->config['id']])){
-				$this->config['value'] = $_POST[$this->config['id']]; 
+				$val = $_POST[$this->config['id']];				
+				if (is_string($val)){
+					if (!isset($this->config['xss']) || $this->config['xss']){
+						$val = $this->xss_clean($val);
+					}
+				}
+
+				$this->config['value'] = $val; 
 			} else {
 				$this->config['value'] = Array(); 
 			}

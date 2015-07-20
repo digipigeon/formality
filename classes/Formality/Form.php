@@ -36,9 +36,9 @@ abstract class Formality_Form{
 	 * @return object Formality_Form
 	 */
 
-	public function __construct($config = Array()){
+	public function __construct($config = Array(),$form_template='_default'){
+		$this->config = Formality::config('lib.form.' . $form_template);
 		//$this->parent = $parent;
-		$this->config = Formality::config('lib.form._default');
 		foreach($config as $key => $val){
 			$this->__call($key,Array($val));			
 		}
@@ -52,12 +52,12 @@ abstract class Formality_Form{
 	 * @param bool $action
 	 * @return object Formality_Form
 	 */
-	public static function factory($id, $config = Array(), $action=false){
+	public static function factory($id, $config = Array(), $action=false,$form_template='_default'){
 		if (empty($action)) $action = $_SERVER['REQUEST_URI'];
 		$config['action'] = $action;
 		if (!isset($config['id'])) $config['id'] = $id;
 
-		$form = new Formality($config);
+		$form = new Formality($config,$form_template);
 
 		if ($form_config = Formality::config('lib.form.' . $id)){
 			foreach($form_config as $key => $val){
@@ -167,10 +167,32 @@ abstract class Formality_Form{
 
 		if (!$fieldset){
 			$html = $this->form_start();
-			foreach($this->fieldset as $fs){
-				$html .= $fs->render();
+			if (empty($this->config['html']['template'])){
+				foreach($this->fieldset as $fs){
+					$html .= $fs->render();
+				}
+			} else {
+				$placement = Array();
+				foreach($this->fieldset as $fs_id => $fs){
+					if (empty($fs->config['placement'])) throw new Exception("Fieldset {$fs_id} placement not set");
+					if (!isset($placement[$fs->config['placement']])) $placement[$fs->config['placement']] = '';
+					$placement[$fs->config['placement']] .= $fs->render();
+				}
+				$html .= $this->config['html']['template'];
+				foreach($placement as $key => $place_html){
+					$html = str_replace("[:$key]",$place_html,$html);
+				}
 			}
+			
 			$html .= $this->form_end();
+
+
+
+//			$html = $this->form_start();
+//			foreach($this->fieldset as $fs){
+//				$html .= $fs->render();
+//			}
+//			$html .= $this->form_end();
 		} else {
 			if (empty($this->config['fieldset'])){
 				throw new Exception("Config.fieldset.$fieldset is missing.");	

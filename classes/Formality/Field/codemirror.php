@@ -9,13 +9,15 @@ class Formality_Field_Codemirror extends Formality_Field{
 		HTML::add_file('/js-back/codemirror.js');
 		HTML::add_file('/css-back/codemirror.css','css');
 		HTML::add_js('
-			var editor = CodeMirror.fromTextArea(document.getElementById("' . $this->config['id'] . '"), {
-				lineNumbers: true,
-				matchBrackets: true,
-				mode: "application/x-httpd-php",
-				indentUnit: 4,
-				indentWithTabs: true
-			});
+			if (!editor){	
+				var editor = CodeMirror.fromTextArea(document.getElementById("' . $this->config['id'] . '"), {
+					lineNumbers: true,
+					matchBrackets: true,
+					mode: "application/x-httpd-php",
+					indentUnit: 4,
+					indentWithTabs: true
+				});
+			}
 		');
 		return parent::render($label, $container);	
 	}

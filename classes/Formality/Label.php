@@ -46,7 +46,7 @@ class Formality_Label{
 		}
 		$output = $this->config['html'];
 		$output = str_replace('[:attr]', $str_attributes, $output);
-		$output = str_replace('[:label]', $this->config['label'], $output);
+		$output = str_replace('[:label]', __($this->config['label']), $output);
 		$output = str_replace('[:field]', $field, $output);
 		$output = str_replace('[:id]', $this->config['id'], $output);
 		return $output;
